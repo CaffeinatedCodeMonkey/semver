@@ -1,12 +1,13 @@
 import { logger } from '@nrwl/devkit';
 import * as conventionalRecommendedBump from 'conventional-recommended-bump';
-import { defer, forkJoin, iif, Observable, of } from 'rxjs';
-import { catchError, shareReplay, switchMap } from 'rxjs/operators';
+import { defer, forkJoin, iif, combineLatest, Observable, of } from 'rxjs';
+import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
 import * as semver from 'semver';
 import { promisify } from 'util';
 
 import { getLastVersion } from './get-last-version';
 import { getCommits, getFirstCommitRef } from './git';
+import { getGreatestVersionBump } from './get-greatest-version-bump';
 
 /**
  * Return new version or null if nothing changed.
@@ -15,12 +16,14 @@ export function tryBump({
   preset,
   projectRoot,
   tagPrefix,
+  dependencyRoots = [],
   releaseType = null,
   preid = null,
 }: {
   preset: string;
   projectRoot: string;
   tagPrefix: string;
+  dependencyRoots?: string[];
   releaseType: string | null;
   preid: string | null;
 }): Observable<string> {
@@ -53,12 +56,26 @@ If your project is already versioned, please tag the latest release commit with 
   );
 
   const commits$ = lastVersionGitRef$.pipe(
-    switchMap((lastVersionGitRef) =>
-      getCommits({
-        projectRoot,
-        since: lastVersionGitRef,
-      })
-    )
+    switchMap((lastVersionGitRef) => {
+      const listOfGetCommits = [projectRoot, ...dependencyRoots]
+        .map(root =>
+          getCommits({
+            projectRoot: root,
+            since: lastVersionGitRef,
+          })
+        );
+      /* Combine the commit lists that are available for the project and
+       * its dependencies (if using --with-deps). */
+      return combineLatest(listOfGetCommits)
+        .pipe(
+          map((results: string[][]) => {
+            return results.reduce((acc, commits) => {
+              acc.push(...commits);
+              return acc;
+            }, []);
+          })
+        )
+    })
   );
 
   return forkJoin([lastVersion$, commits$]).pipe(
@@ -74,12 +91,17 @@ If your project is already versioned, please tag the latest release commit with 
         return of(null);
       }
 
-      return _semverBump({
-        since: lastVersion,
-        preset,
-        projectRoot,
-        tagPrefix,
-      });
+      const semverBumps = [projectRoot, ...dependencyRoots]
+        .map(root => _semverBump({
+          since: lastVersion,
+          preset,
+          projectRoot: root,
+          tagPrefix,
+        }));
+      return combineLatest(semverBumps)
+        .pipe(
+          map(bumps => getGreatestVersionBump(bumps))
+        )
     })
   );
 }

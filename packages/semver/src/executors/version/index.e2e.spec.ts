@@ -14,6 +14,7 @@ describe('@jscutlery/semver:version', () => {
   const defaultBuilderOptions: VersionBuilderSchema = {
     dryRun: false,
     noVerify: false,
+    useDeps: false,
     push: false,
     remote: 'origin',
     baseBranch: 'main',

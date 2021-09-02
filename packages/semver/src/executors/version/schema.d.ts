@@ -7,6 +7,7 @@ export interface VersionBuilderSchema {
   syncVersions?: boolean;
   skipRootChangelog?: boolean;
   skipProjectChangelog?: boolean;
+  useDeps?: boolean;
   version?: 'patch' | 'minor' | 'major' | 'premajor' | 'preminor' | 'prepatch' | 'prerelease';
   preid?: string;
   changelogHeader?: string;

@@ -101,8 +101,9 @@ nx run workspace:version --version=prerelease --preid=beta
 | **`--origin`**                 | `string`  | `'origin'` | push against git remote repository                                                                                                                |
 | **`--base-branch`**            | `string`  | `'main'`   | push against git base branch                                                                                                                      |
 | **`--version`**                | `string`  | `null`     | specify the level of change                                                                                                                       |
-| **`--preid`**                  | `string`  | `null`     | prerelease identifier                                                                                                                             |
-| **`--version-tag-prefix`**     | `string`  | `null`     | Version tag prefix, defaults are `'v'` and `'${target}-'` for sync and independent modes, `${target}` will be replaced with context target value. |
+| **`--preid`**                  | `string`  | `null`     | prerelease identifier                                                                                                                              |
+| **`--version-tag-prefix`**      | `string`  | `null`     | Version tag prefix, defaults are `'v'` and `'${target}-'` for sync and independent modes, `${target}` will be replaced with context target value.  |
+| **`--use-deps`**               | `boolean` | `false`    | Flag to use dependencies as part of calculating a version bump.                                                                                   |
 
 ## Changelog
 

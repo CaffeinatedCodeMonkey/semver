@@ -12,12 +12,14 @@ import { createFakeContext } from './testing';
 import * as git from './utils/git';
 import { tryBump } from './utils/try-bump';
 import * as workspace from './utils/workspace';
+import { getProjectDependencies } from './utils/get-project-dependencies';
 
 jest.mock('child_process');
 jest.mock('standard-version', () => jest.fn());
 jest.mock('standard-version/lib/lifecycles/changelog', () => jest.fn());
 
 jest.mock('./utils/git');
+jest.mock('./utils/get-project-dependencies');
 jest.mock('./utils/try-bump');
 
 describe('@jscutlery/semver:version', () => {
@@ -33,11 +35,15 @@ describe('@jscutlery/semver:version', () => {
   const mockStandardVersion = standardVersion as jest.MockedFunction<
     typeof standardVersion
   >;
+  const mockGetProjectDependencies = getProjectDependencies as jest.MockedFunction<
+    typeof getProjectDependencies
+  >;
 
   let context: ExecutorContext;
 
   const options: VersionBuilderSchema = {
     dryRun: false,
+    useDeps: false,
     noVerify: false,
     push: false,
     remote: 'origin',
@@ -52,10 +58,15 @@ describe('@jscutlery/semver:version', () => {
       project: 'a',
       projectRoot: '/root/packages/a',
       workspaceRoot: '/root',
+      additionalProjects: [
+        {project: 'lib1', projectRoot: '/root/libs/lib1'},
+        {project: 'lib2', projectRoot: '/root/libs/lib2'},
+      ]
     });
 
     jest.spyOn(logger, 'info');
 
+    mockGetProjectDependencies.mockReturnValue(Promise.resolve(['lib1', 'lib2']));
     mockChangelog.mockResolvedValue(undefined);
     mockTryBump.mockReturnValue(of('2.1.0'));
 
@@ -85,7 +96,7 @@ describe('@jscutlery/semver:version', () => {
     /* Mock getProjectRoots. */
     jest
       .spyOn(workspace, 'getProjectRoots')
-      .mockReturnValue(of(['/root/packages/a', '/root/packages/b']));
+      .mockReturnValue(of(['/root/packages/a', '/root/packages/b', '/root/libs/lib1', '/root/libs/lib2']));
   });
 
   afterEach(() => {
@@ -97,6 +108,38 @@ describe('@jscutlery/semver:version', () => {
       const { success } = await version(options, context);
 
       expect(success).toBe(true);
+      expect(mockTryBump)
+        .toBeCalledWith(
+          expect.objectContaining({
+            dependencyRoots: []
+          })
+        );
+      expect(standardVersion).toBeCalledWith(
+        expect.objectContaining({
+          silent: false,
+          preset: 'angular',
+          dryRun: false,
+          noVerify: false,
+          tagPrefix: 'a-',
+          path: '/root/packages/a',
+          infile: '/root/packages/a/CHANGELOG.md',
+          bumpFiles: ['/root/packages/a/package.json'],
+          packageFiles: ['/root/packages/a/package.json'],
+        })
+      );
+    });
+
+    it('should run standard-version independently on a project with dependencies', async () => {
+      const tempOptions = {...options, useDeps: true};
+      const { success } = await version(tempOptions, context);
+
+      expect(success).toBe(true);
+      expect(mockTryBump)
+        .toBeCalledWith(
+          expect.objectContaining({
+            dependencyRoots: ['/root/libs/lib1', '/root/libs/lib2']
+          })
+        );
       expect(standardVersion).toBeCalledWith(
         expect.objectContaining({
           silent: false,
