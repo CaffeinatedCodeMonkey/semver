@@ -100,7 +100,7 @@ describe('getPackageFiles', () => {
     );
   });
 
-  it('should handle extracted project\'s configuration', async () => {
+  it("should handle extracted project's configuration", async () => {
     fakeReadFileSync.mockReturnValue(
       JSON.stringify({
         version: 1,

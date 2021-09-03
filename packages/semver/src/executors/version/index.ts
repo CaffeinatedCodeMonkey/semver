@@ -32,9 +32,14 @@ export default async function version(
 ): Promise<{ success: boolean }> {
   const workspaceRoot = context.root;
   const preset = 'angular';
-  const tagPrefix = versionTagPrefix ? resolveTagTemplate(versionTagPrefix,
-      { target: context.projectName, projectName: context.projectName })
-    : (syncVersions ? 'v' : `${context.projectName}-`);
+  const tagPrefix = versionTagPrefix
+    ? resolveTagTemplate(versionTagPrefix, {
+        target: context.projectName,
+        projectName: context.projectName,
+      })
+    : syncVersions
+    ? 'v'
+    : `${context.projectName}-`;
 
   const projectRoot = getProjectRoot(context);
 
@@ -43,8 +48,9 @@ export default async function version(
     // Include any depended-upon libraries in determining the version bump.
     try {
       const dependencyLibs = await getProjectDependencies(context.projectName);
-      dependencyRoots = dependencyLibs
-        .map(name => context.workspace.projects[name].root);
+      dependencyRoots = dependencyLibs.map(
+        (name) => context.workspace.projects[name].root
+      );
     } catch (e) {
       logger.error('Failed to determine dependencies.');
       return Promise.reject(e);
@@ -103,11 +109,13 @@ export default async function version(
     })
   );
 
-  return action$.pipe(
-    mapTo({ success: true }),
-    catchError((error) => {
-      logger.error(error.stack ?? error.toString());
-      return of({ success: false });
-    })
-  ).toPromise();
+  return action$
+    .pipe(
+      mapTo({ success: true }),
+      catchError((error) => {
+        logger.error(error.stack ?? error.toString());
+        return of({ success: false });
+      })
+    )
+    .toPromise();
 }

@@ -35,9 +35,10 @@ describe('@jscutlery/semver:version', () => {
   const mockStandardVersion = standardVersion as jest.MockedFunction<
     typeof standardVersion
   >;
-  const mockGetProjectDependencies = getProjectDependencies as jest.MockedFunction<
-    typeof getProjectDependencies
-  >;
+  const mockGetProjectDependencies =
+    getProjectDependencies as jest.MockedFunction<
+      typeof getProjectDependencies
+    >;
 
   let context: ExecutorContext;
 
@@ -59,9 +60,9 @@ describe('@jscutlery/semver:version', () => {
       projectRoot: '/root/packages/a',
       workspaceRoot: '/root',
       additionalProjects: [
-        {project: 'lib1', projectRoot: '/root/libs/lib1'},
-        {project: 'lib2', projectRoot: '/root/libs/lib2'},
-      ]
+        { project: 'lib1', projectRoot: '/root/libs/lib1' },
+        { project: 'lib2', projectRoot: '/root/libs/lib2' },
+      ],
     });
 
     jest.spyOn(logger, 'info');
@@ -96,7 +97,14 @@ describe('@jscutlery/semver:version', () => {
     /* Mock getProjectRoots. */
     jest
       .spyOn(workspace, 'getProjectRoots')
-      .mockReturnValue(of(['/root/packages/a', '/root/packages/b', '/root/libs/lib1', '/root/libs/lib2']));
+      .mockReturnValue(
+        of([
+          '/root/packages/a',
+          '/root/packages/b',
+          '/root/libs/lib1',
+          '/root/libs/lib2',
+        ])
+      );
   });
 
   afterEach(() => {
@@ -108,12 +116,11 @@ describe('@jscutlery/semver:version', () => {
       const { success } = await version(options, context);
 
       expect(success).toBe(true);
-      expect(mockTryBump)
-        .toBeCalledWith(
-          expect.objectContaining({
-            dependencyRoots: []
-          })
-        );
+      expect(mockTryBump).toBeCalledWith(
+        expect.objectContaining({
+          dependencyRoots: [],
+        })
+      );
       expect(standardVersion).toBeCalledWith(
         expect.objectContaining({
           silent: false,
@@ -130,17 +137,18 @@ describe('@jscutlery/semver:version', () => {
     });
 
     it('should run standard-version independently on a project with dependencies', async () => {
-      mockGetProjectDependencies.mockReturnValue(Promise.resolve(['lib1', 'lib2']));
-      const tempOptions = {...options, useDeps: true};
+      mockGetProjectDependencies.mockReturnValue(
+        Promise.resolve(['lib1', 'lib2'])
+      );
+      const tempOptions = { ...options, useDeps: true };
       const { success } = await version(tempOptions, context);
 
       expect(success).toBe(true);
-      expect(mockTryBump)
-        .toBeCalledWith(
-          expect.objectContaining({
-            dependencyRoots: ['/root/libs/lib1', '/root/libs/lib2']
-          })
-        );
+      expect(mockTryBump).toBeCalledWith(
+        expect.objectContaining({
+          dependencyRoots: ['/root/libs/lib1', '/root/libs/lib2'],
+        })
+      );
       expect(standardVersion).toBeCalledWith(
         expect.objectContaining({
           silent: false,
@@ -157,8 +165,10 @@ describe('@jscutlery/semver:version', () => {
     });
 
     it('should run standard-version independently on a project with failure on dependencies', async () => {
-      mockGetProjectDependencies.mockReturnValue(Promise.reject('thrown error'));
-      const tempOptions = {...options, useDeps: true};
+      mockGetProjectDependencies.mockReturnValue(
+        Promise.reject('thrown error')
+      );
+      const tempOptions = { ...options, useDeps: true };
       let error;
       try {
         await version(tempOptions, context);
@@ -166,21 +176,22 @@ describe('@jscutlery/semver:version', () => {
         error = e;
       }
       expect(error).toEqual('thrown error');
-      expect(logger.error).toBeCalledWith(
-        'Failed to determine dependencies.'
-      );
+      expect(logger.error).toBeCalledWith('Failed to determine dependencies.');
       expect(standardVersion).not.toBeCalled();
     });
 
     it('should run standard-version with a custom tag', async () => {
-      const { success } = await version({...options, versionTagPrefix: 'custom-tag-prefix/${target}-' }, context);
+      const { success } = await version(
+        { ...options, versionTagPrefix: 'custom-tag-prefix/${target}-' },
+        context
+      );
 
       expect(success).toBe(true);
       expect(standardVersion).toBeCalledWith(
         expect.objectContaining({
           header: expect.any(String),
           dryRun: false,
-          tagPrefix: "custom-tag-prefix/a-",
+          tagPrefix: 'custom-tag-prefix/a-',
         })
       );
     });
@@ -340,10 +351,7 @@ describe('@jscutlery/semver:version', () => {
         of({ stderr: '', stdout: 'success' })
       );
 
-      const { success } = await version(
-        { ...options, push: true },
-        context
-      );
+      const { success } = await version({ ...options, push: true }, context);
 
       expect(success).toBe(true);
       expect(mockTryPushToGitRemote).toHaveBeenCalledWith(

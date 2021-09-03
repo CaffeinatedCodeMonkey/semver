@@ -12,9 +12,10 @@ jest.mock('./get-last-version');
 jest.mock('./git');
 
 describe('tryBump', () => {
-  const mockConventionalRecommendedBump = conventionalRecommendedBump as jest.MockedFunction<
-    typeof conventionalRecommendedBump
-  >;
+  const mockConventionalRecommendedBump =
+    conventionalRecommendedBump as jest.MockedFunction<
+      typeof conventionalRecommendedBump
+    >;
   const mockGetLastVersion = getLastVersion as jest.MockedFunction<
     typeof getLastVersion
   >;
@@ -121,17 +122,17 @@ describe('tryBump', () => {
 
     expect(mockGetCommits).toBeCalledTimes(3);
     expect(mockGetCommits).toBeCalledWith({
-        projectRoot: '/libs/demo',
-        since: 'v2.1.0',
-      });
+      projectRoot: '/libs/demo',
+      since: 'v2.1.0',
+    });
     expect(mockGetCommits).toBeCalledWith({
-        projectRoot: '/libs/dep1',
-        since: 'v2.1.0',
-      });
+      projectRoot: '/libs/dep1',
+      since: 'v2.1.0',
+    });
     expect(mockGetCommits).toBeCalledWith({
-        projectRoot: '/libs/dep2',
-        since: 'v2.1.0',
-      });
+      projectRoot: '/libs/dep2',
+      since: 'v2.1.0',
+    });
 
     expect(mockConventionalRecommendedBump).toBeCalledTimes(3);
     expect(mockConventionalRecommendedBump).toBeCalledWith(

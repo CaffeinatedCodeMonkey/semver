@@ -57,24 +57,22 @@ If your project is already versioned, please tag the latest release commit with 
 
   const commits$ = lastVersionGitRef$.pipe(
     switchMap((lastVersionGitRef) => {
-      const listOfGetCommits = [projectRoot, ...dependencyRoots]
-        .map(root =>
-          getCommits({
-            projectRoot: root,
-            since: lastVersionGitRef,
-          })
-        );
+      const listOfGetCommits = [projectRoot, ...dependencyRoots].map((root) =>
+        getCommits({
+          projectRoot: root,
+          since: lastVersionGitRef,
+        })
+      );
       /* Combine the commit lists that are available for the project and
        * its dependencies (if using --use-deps). */
-      return combineLatest(listOfGetCommits)
-        .pipe(
-          map((results: string[][]) => {
-            return results.reduce((acc, commits) => {
-              acc.push(...commits);
-              return acc;
-            }, []);
-          })
-        )
+      return combineLatest(listOfGetCommits).pipe(
+        map((results: string[][]) => {
+          return results.reduce((acc, commits) => {
+            acc.push(...commits);
+            return acc;
+          }, []);
+        })
+      );
     })
   );
 
@@ -91,17 +89,17 @@ If your project is already versioned, please tag the latest release commit with 
         return of(null);
       }
 
-      const semverBumps = [projectRoot, ...dependencyRoots]
-        .map(root => _semverBump({
+      const semverBumps = [projectRoot, ...dependencyRoots].map((root) =>
+        _semverBump({
           since: lastVersion,
           preset,
           projectRoot: root,
           tagPrefix,
-        }));
-      return combineLatest(semverBumps)
-        .pipe(
-          map(bumps => getGreatestVersionBump(bumps))
-        )
+        })
+      );
+      return combineLatest(semverBumps).pipe(
+        map((bumps) => getGreatestVersionBump(bumps))
+      );
     })
   );
 }

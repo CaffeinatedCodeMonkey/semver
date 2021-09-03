@@ -36,7 +36,7 @@ describe('_execAsync (Promise)', () => {
 
   it('should handle failure', async () => {
     try {
-      await  _execAsync('exit 1');
+      await _execAsync('exit 1');
       fail();
     } catch (error) {
       expect(error).toEqual(

@@ -169,7 +169,11 @@ describe('git', () => {
 
       expect(cp.execAsync).toBeCalledWith(
         'git',
-        expect.arrayContaining(['add', 'packages/demo/file.txt', 'packages/demo/other-file.ts'])
+        expect.arrayContaining([
+          'add',
+          'packages/demo/file.txt',
+          'packages/demo/other-file.ts',
+        ])
       );
     });
 
@@ -187,7 +191,7 @@ describe('git', () => {
     });
   });
 
-    describe('getFirstCommitRef', () => {
+  describe('getFirstCommitRef', () => {
     it('should get last git commit', async () => {
       jest
         .spyOn(cp, 'execAsync')

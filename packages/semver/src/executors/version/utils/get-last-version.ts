@@ -11,14 +11,14 @@ export function getLastVersion({
 }): Observable<string> {
   return from(promisify(gitSemverTags)({ tagPrefix })).pipe(
     switchMap((tags: string[]) => {
-      const versions = tags.map(tag => tag.substring(tagPrefix.length));
+      const versions = tags.map((tag) => tag.substring(tagPrefix.length));
       const [version] = versions.sort(semver.rcompare);
 
       if (version == null) {
         return throwError(new Error('No semver tag found'));
       }
 
-      const tag =`${tagPrefix}${version}`;
+      const tag = `${tagPrefix}${version}`;
       return of(tag.substring(tagPrefix.length));
     })
   );
